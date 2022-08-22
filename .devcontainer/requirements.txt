@@ -1,0 +1,13 @@
+imutils==0.5.4
+mediapipe==0.8.10
+opencv-python==4.5.5.64
+orjson==3.7.2
+protobuf==3.20.0
+
+requests
+scipy
+
+snakeviz
+
+dispatchonvalue
+wrapt

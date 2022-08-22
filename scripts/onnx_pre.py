@@ -24,7 +24,7 @@ sess=rt.InferenceSession(model_path)#model_path就是模型的地址
 input_name=sess.get_inputs()[0].name
 
 
-img = cv2.imread( '../data/croped/imgs/000000000036_0.jpg')
+img = cv2.imread( '../data/cropped/imgs/000000000036_0.jpg')
 print("img shape: ", img.shape)
 img = cv2.resize(img, ( 192, 192))
 img = img[:, :, [ 2, 1, 0]] # BGR2RGB

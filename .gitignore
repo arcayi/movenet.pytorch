@@ -13,3 +13,6 @@ __pycache__
 /output/show_imgs
 /output/detect
 
+data/test2017/
+output/
+.vscode/VC.*

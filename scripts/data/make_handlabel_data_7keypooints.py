@@ -13,11 +13,11 @@ import glob
 
 
 read_dir = "label5"
-save_dir = "croped"
+save_dir = "cropped"
 
 
-output_name = 'croped/%s.json' % read_dir
-output_img_dir = "croped/imgs"
+output_name = 'cropped/%s.json' % read_dir
+output_img_dir = "cropped/imgs"
 
 
 if __name__ == '__main__':

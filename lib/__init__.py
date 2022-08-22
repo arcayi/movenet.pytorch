@@ -5,7 +5,8 @@ https://github.com/fire717
 import os
 
 from lib.data.data import Data
-from lib.models.movenet_mobilenetv2 import MoveNet
+# from lib.models.movenet_mobilenetv2 import MoveNet
+from lib.models.movenet_mobilenetv3 import MoveNet
 from lib.task.task import Task
 
 

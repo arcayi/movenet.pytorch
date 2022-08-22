@@ -18,7 +18,7 @@ from lib.loss.movenet_loss import MovenetLoss
 from lib.utils.utils import printDash
 from lib.utils.metrics import myAcc
 
-
+from tqdm import tqdm
 
 
 
@@ -58,7 +58,7 @@ class Task():
         self.onTrainEnd()
 
 
-    def predict(self, data_loader, save_dir):
+    def predict(self, data_loader, save_dir, writefile=True,position=0):
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
@@ -67,7 +67,7 @@ class Task():
 
         with torch.no_grad():
 
-            for (img, img_name) in data_loader:
+            for (img, img_name) in tqdm(data_loader, position=position):
 
                 # if "yoga_img_483" not in img_name[0]:
                 #     continue
@@ -81,35 +81,35 @@ class Task():
 
 
                 pre = movenetDecode(output, None, mode='output')
-                print(pre)
+                # print(pre)
 
+                if writefile:
+                    basename = os.path.basename(img_name[0])
+                    img = np.transpose(img[0].cpu().numpy(),axes=[1,2,0])
+                    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+                    h,w = img.shape[:2]
 
-                basename = os.path.basename(img_name[0])
-                img = np.transpose(img[0].cpu().numpy(),axes=[1,2,0])
-                img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-                h,w = img.shape[:2]
+                    for i in range(len(pre[0])//2):
+                        x = int(pre[0][i*2]*w)
+                        y = int(pre[0][i*2+1]*h)
+                        cv2.circle(img, (x, y), 3, (255,0,0), 2)
 
-                for i in range(len(pre[0])//2):
-                    x = int(pre[0][i*2]*w)
-                    y = int(pre[0][i*2+1]*h)
-                    cv2.circle(img, (x, y), 3, (255,0,0), 2)
+                    cv2.imwrite(os.path.join(save_dir,basename), img)
+                    
 
-                cv2.imwrite(os.path.join(save_dir,basename), img)
-                
+                    ## debug
+                    heatmaps = output[0].cpu().numpy()[0]
+                    centers = output[1].cpu().numpy()[0]
+                    regs = output[2].cpu().numpy()[0]
+                    offsets = output[3].cpu().numpy()[0]
 
-                ## debug
-                heatmaps = output[0].cpu().numpy()[0]
-                centers = output[1].cpu().numpy()[0]
-                regs = output[2].cpu().numpy()[0]
-                offsets = output[3].cpu().numpy()[0]
-
-                #print(heatmaps.shape)
-                hm = cv2.resize(np.sum(heatmaps,axis=0),(192,192))*255
-                cv2.imwrite(os.path.join(save_dir,basename[:-4]+"_heatmaps.jpg"),hm)
-                img[:,:,0]+=hm
-                cv2.imwrite(os.path.join(save_dir,basename[:-4]+"_img.jpg"), img)
-                cv2.imwrite(os.path.join(save_dir,basename[:-4]+"_center.jpg"),cv2.resize(centers[0]*255,(192,192)))
-                cv2.imwrite(os.path.join(save_dir,basename[:-4]+"_regs0.jpg"),cv2.resize(regs[0]*255,(192,192)))
+                    #print(heatmaps.shape)
+                    hm = cv2.resize(np.sum(heatmaps,axis=0),(192,192))*255
+                    cv2.imwrite(os.path.join(save_dir,basename[:-4]+"_heatmaps.jpg"),hm)
+                    img[:,:,0]+=hm
+                    cv2.imwrite(os.path.join(save_dir,basename[:-4]+"_img.jpg"), img)
+                    cv2.imwrite(os.path.join(save_dir,basename[:-4]+"_center.jpg"),cv2.resize(centers[0]*255,(192,192)))
+                    cv2.imwrite(os.path.join(save_dir,basename[:-4]+"_regs0.jpg"),cv2.resize(regs[0]*255,(192,192)))
                 
 
 

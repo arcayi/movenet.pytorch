@@ -82,7 +82,7 @@ python pth2onnx.py
 ## Tips to improve
 #### 1. Focus on data
 * Add COCO2014. (But as I know it has some duplicate data of COCO2017, and I don't know if google use it.)
-* Clean the croped COCO2017 data. (Some img just have little points, such as big face, big body,etc.MoveNet is a small network, COCO data is a little hard for it.)
+* Clean the cropped COCO2017 data. (Some img just have little points, such as big face, big body,etc.MoveNet is a small network, COCO data is a little hard for it.)
 * Add some yoga, fitness, and dance videos frame from YouTube. (Highly Recommened! Cause Google did this on their Movenet and said 'Evaluations on the Active validation dataset show a significant performance boost relative to identical architectures trained using only COCO. ')
 
 #### 2. Change backbone

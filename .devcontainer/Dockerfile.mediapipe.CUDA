@@ -1,0 +1,82 @@
+# Another solution using CUDA
+# FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu18.04 as mediapipe-base
+# FROM nvidia/cuda:11.7.0-devel-ubuntu20.04 as mediapipe-base
+FROM nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04 as mediapipe-base
+ENV DEBIAN_FRONTEND noninteractive
+RUN sed -i -e 's/http\(s\)*:\(.*\)\/ubuntu/http:\/\/mirrors.ustc.edu.cn\/ubuntu/g' /etc/apt/sources.list
+
+RUN apt update \
+    && apt install -y --no-install-recommends \
+	python3-opencv ca-certificates python3-dev git wget sudo \
+	ninja-build unzip
+RUN ln -sfv /usr/bin/python3 /usr/bin/python
+
+RUN apt-get install ffmpeg libsm6 libxext6 iputils-ping -y --no-install-recommends
+RUN apt-get install python3-tk -y --no-install-recommends
+
+RUN apt-get install -y python3-pip
+RUN python3 -m pip install -i https://pypi.mirrors.ustc.edu.cn/simple/  -U pip
+RUN pip config set --global global.index-url https://pypi.mirrors.ustc.edu.cn/simple/
+RUN pip config set --global install.trusted-host pypi.mirrors.ustc.edu.cn
+
+#安装mediapipe
+RUN pip install mediapipe
+RUN pip install -U opencv-python orjson requests scipy
+RUN pip install imutils ipykernel setuptools matplotlib
+
+# RUN pip install -U protobuf==3.20.0
+RUN pip install -U protobuf==3.19.4
+
+# [Optional] If your pip requirements rarely change, uncomment this section to add them to the image.
+COPY .devcontainer/requirements.txt /tmp/pip-tmp/
+RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requirements.txt \
+   && rm -rf /tmp/pip-tmp
+
+FROM mediapipe-base as mediapipe-dev
+
+# added later
+RUN apt install -y gcc-8 g++-8
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+RUN sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 30
+# RUN sudo update-alternatives --install /usr/local/bin/python python /usr/bin/python2 20
+
+# RUN apt install -y protobuf-compiler npm
+# RUN apt install -y npm
+# RUN npm install -g @bazel/bazelisk
+
+RUN sudo apt -y install build-essential libgl1-mesa-dev
+RUN sudo apt -y install libglew-dev libsdl2-dev libsdl2-image-dev libglm-dev libfreetype6-dev
+RUN sudo apt -y install libglfw3-dev libglfw3
+RUN sudo apt -y install libgl1-mesa-dev
+RUN sudo apt -y install libglu1-mesa-dev
+RUN sudo apt -y install freeglut3-dev
+RUN sudo apt -y install mesa-utils
+RUN sudo apt -y install libgtkglext1 libgtkglext1-dev
+RUN sudo apt -y install libopencv-core-dev libopencv-highgui-dev \
+                libopencv-calib3d-dev libopencv-features2d-dev \
+                libopencv-imgproc-dev libopencv-video-dev
+# glxinfo | grep OpenGL
+
+# git clone git@github.com:xiong-jie-y/mediapipe.git
+# cd mediapipe
+# git checkout add_gpu_support_for_python
+# python setup.py gen_protos && python setup.py install --link-opencv
+
+
+# create a non-root user
+ARG USER_ID=1000
+ARG USERNAME=vscode
+RUN useradd -m --no-log-init --system  --uid ${USER_ID} $USERNAME -g sudo -s /bin/bash
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# persist cli history for the non-root user
+RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
+    && mkdir /commandhistory \
+    && touch /commandhistory/.bash_history \
+    && chown -R $USERNAME /commandhistory \
+    && echo $SNIPPET >> "/home/$USERNAME/.bashrc"
+
+USER $USERNAME
+WORKDIR /home/$USERNAME
+
+ENV PATH="/home/$USERNAME/.local/bin:${PATH}"
